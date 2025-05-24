@@ -19,7 +19,7 @@ Built with [smolagents](https://github.com/smol-ai/smol-agents), [Google Gemini]
 ## 🌐 Try it Online
 
 > **Live Demo:**  
-> [https://huggingface.co/spaces/your-username/your-space-name](https://huggingface.co/spaces/your-username/your-space-name)
+> [https://huggingface.co/spaces/your-username/your-space-name](https://huggingface.co/spaces/LazyHuman/pdf-chat)
 
 ---
 
@@ -50,8 +50,8 @@ Built with [smolagents](https://github.com/smol-ai/smol-agents), [Google Gemini]
 
 1. **Clone this repository:**
 ```bash
-git clone https://github.com/yourusername/pdf-chat-gemini
-cd pdf-chat-gemini
+git clone https://github.com/KunalGupta25/chat-with-pdf.git
+cd chat-with-pdf
 ```
 2. **Install dependencies:**
 ```bash
@@ -75,7 +75,7 @@ Open [http://localhost:7860](http://localhost:7860) in your browser.
 
 ### **Hugging Face Spaces**
 
-- Go to your Space: [https://huggingface.co/spaces/your-username/your-space-name](https://huggingface.co/spaces/your-username/your-space-name)
+- Go to your Space: [https://huggingface.co/spaces/your-username/your-space-name](https://huggingface.co/spaces/LazyHuman/pdf-chat)
 - Click **"Duplicate Space"** to make your own copy, or use it directly if public.
 - Add your `GEMINI_API_KEY` as a secret in the Space settings (if you duplicate or deploy privately).
 
