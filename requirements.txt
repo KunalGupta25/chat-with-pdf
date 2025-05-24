@@ -4,3 +4,4 @@ smolagents[litellm]
 pypdf
 gradio
 litellm
+python-dotenv

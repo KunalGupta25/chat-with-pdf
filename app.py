@@ -1,16 +1,16 @@
-import gradio as gr
-from smolagents import LiteLLMModel, CodeAgent, tool
 import os
+import gradio as gr
+from smolagents import CodeAgent, tool, LiteLLMModel
 from pypdf import PdfReader
-from litellm import completion
+from dotenv import load_dotenv
 
-#Initialize the Model
-model = LiteLLMModel(
-    model_name="gemini/gemini-1.5-flash",
-    api_key=os.environ.get("GEMINI_API_KEY")
-)
+# Load environment variables (for local dev)
+load_dotenv()
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY not set. Please set it in your .env or Hugging Face Space secrets.")
 
-#tool to extract text from PDF
+# --------- TOOLS ---------
 @tool
 def process_pdf(file_path: str) -> str:
     """
@@ -20,55 +20,81 @@ def process_pdf(file_path: str) -> str:
     Returns:
         str: Extracted text from the PDF.
     """
-    reader = PdfReader(file_path)
-    return "\n".join([page.extract_text() for page in reader.pages])
+    try:
+        reader = PdfReader(file_path)
+        return "\n".join([page.extract_text() or "" for page in reader.pages])
+    except Exception as e:
+        return f"PDF extraction failed: {str(e)}"
 
-#tool to analysis the pdf for answering question
 @tool
-def chat_with_pdf(query: str, pdf_text: str, chat_history: list) -> str:
+def chat_with_pdf(query: str, pdf_text: str) -> str:
     """
     Answer questions about the PDF content.
     Args:
-        query (str): The question to answer.
-        pdf_text (str): The text extracted from the PDF.
-        chat_history (list): Previous chat history.
+        query (str): The user's question.
+        pdf_text (str): Text extracted from the PDF.
     Returns:
-        str: Answer to the question.
+        str: The answer to the question based on the PDF content.
     """
+    # The actual logic is handled by the agent's LLM
     pass
 
-#Agent to handle the chat with PDF
-agent = CodeAgent(
-    model=model,
-    model_kwargs={
-        "model": "gemini/gemini-pro",
-        "api_base": "https://generativelanguage.googleapis.com/v1beta",  # Correct Google API endpoint
-        "api_key": os.getenv("GEMINI_API_KEY")  # Ensure key is set in environment
-    },
-    tools=[process_pdf, chat_with_pdf]
+# --------- AGENT SETUP ---------
+model = LiteLLMModel(
+    model_id="gemini/gemini-1.5-flash",  # Use "gemini/gemini-1.5-pro" if you have access
+    api_key=GEMINI_API_KEY
+    # Do NOT set api_base for Gemini AI Studio keys!
 )
-#Gradio Interface
-def process_pdf_ui(file):
-    pdf_text = process_pdf(file.name)
-    return pdf_text
 
-def chat_ui(query, history, pdf_text):
-    response = agent.run(
-        f"PDF Context: {pdf_text}\nUser Query: {query}\nChat History: {history}"
-    )
-    return response, history + [(query, response)]
+agent = CodeAgent(
+    tools=[process_pdf, chat_with_pdf],
+    model=model
+)
+
+# --------- GRADIO INTERFACE ---------
+def process_pdf_ui(file):
+    if not file:
+        return ""
+    return process_pdf(file.name)
+
+def chat_ui(message, history, pdf_text):
+    if not pdf_text:
+        return [{"role": "assistant", "content": "Please upload a PDF first."}]
+    # Compose a prompt for the agent
+    prompt = f"PDF Content:\n{pdf_text}\n\nUser Question: {message}"
+    try:
+        response = agent.run(prompt)
+        # Return response in OpenAI-style message format for Gradio
+        history = history or []
+        history.append({"role": "user", "content": message})
+        history.append({"role": "assistant", "content": response})
+        return history
+    except Exception as e:
+        history = history or []
+        history.append({"role": "assistant", "content": f"Error: {str(e)}"})
+        return history
 
 with gr.Blocks() as demo:
-    gr.Markdown("# PDF Chatbot")
+    gr.Markdown("# 📄 Chat with your PDF (Gemini AI)")
     with gr.Row():
-        pdf_input = gr.File(label="Upload PDF", file_types=[".pdf"])
-        pdf_text = gr.Textbox(visible=False)
+        with gr.Column(scale=1):
+            pdf_input = gr.File(label="Upload PDF", file_types=[".pdf"])
+            pdf_text = gr.Textbox(visible=False)
+        with gr.Column(scale=3):
+            chatbot = gr.Chatbot(label="PDF Chat", height=400, type="messages")
+            msg = gr.Textbox(label="Ask a question about the PDF", placeholder="Type your question and hit Enter...")
 
-        chatbot = gr.Chatbot(type="messages")
-        msg = gr.Textbox(placeholder="Ask a question about the PDF")
+    pdf_input.upload(
+        fn=process_pdf_ui,
+        inputs=pdf_input,
+        outputs=pdf_text
+    )
 
-        pdf_input.upload(process_pdf_ui, inputs=pdf_input, outputs=pdf_text)
-        msg.submit(chat_ui, inputs=[msg, chatbot, pdf_text], outputs=[chatbot, msg])
+    msg.submit(
+        fn=chat_ui,
+        inputs=[msg, chatbot, pdf_text],
+        outputs=chatbot
+    )
 
 if __name__ == "__main__":
     demo.launch()
