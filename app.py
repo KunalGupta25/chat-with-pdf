@@ -39,8 +39,7 @@ def chat_with_pdf(query: str, pdf_text: str, chat_history: list) -> str:
 #Agent to handle the chat with PDF
 agent = CodeAgent(
     model=model,
-    tools=[process_pdf, chat_with_pdf],
-    verbose=True
+    tools=[process_pdf, chat_with_pdf]
 )
 #Gradio Interface
 def process_pdf_ui(file):
