@@ -3,3 +3,4 @@ smolagents
 smolagents[litellm]
 pypdf
 gradio
+litellm

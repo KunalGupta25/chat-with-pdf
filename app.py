@@ -2,6 +2,7 @@ import gradio as gr
 from smolagents import LiteLLMModel, CodeAgent, tool
 import os
 from pypdf import PdfReader
+from litellm import completion
 
 #Initialize the Model
 model = LiteLLMModel(
@@ -39,6 +40,11 @@ def chat_with_pdf(query: str, pdf_text: str, chat_history: list) -> str:
 #Agent to handle the chat with PDF
 agent = CodeAgent(
     model=model,
+    model_kwargs={
+        "model": "gemini/gemini-pro",
+        "api_base": "https://generativelanguage.googleapis.com/v1beta",  # Correct Google API endpoint
+        "api_key": os.getenv("GEMINI_API_KEY")  # Ensure key is set in environment
+    },
     tools=[process_pdf, chat_with_pdf]
 )
 #Gradio Interface
@@ -54,7 +60,6 @@ def chat_ui(query, history, pdf_text):
 
 with gr.Blocks() as demo:
     gr.Markdown("# PDF Chatbot")
-    
     with gr.Row():
         pdf_input = gr.File(label="Upload PDF", file_types=[".pdf"])
         pdf_text = gr.Textbox(visible=False)
