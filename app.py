@@ -75,7 +75,7 @@ def chat_ui(message, history, pdf_text):
         return history
 
 with gr.Blocks() as demo:
-    gr.Markdown("# 📄 Chat with your PDF (Gemini AI)")
+    gr.Markdown("# 📄 Chat with your PDF")
     with gr.Row():
         with gr.Column(scale=1):
             pdf_input = gr.File(label="Upload PDF", file_types=[".pdf"])
@@ -83,7 +83,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=3):
             chatbot = gr.Chatbot(label="PDF Chat", height=400, type="messages")
             msg = gr.Textbox(label="Ask a question about the PDF", placeholder="Type your question and hit Enter...")
-
+    gr.Markdown("**Note:** This app uses the Gemini AI model to process your PDF and answer questions. Make sure to upload a PDF first and add your Google API in secrets. You can get it from [Gemini AI Studio](https://aistudio.google.com/apikey).")
     pdf_input.upload(
         fn=process_pdf_ui,
         inputs=pdf_input,
