@@ -1,3 +1,14 @@
+---
+title: Pdf Chat
+emoji: ⚡
+colorFrom: yellow
+colorTo: green
+sdk: gradio
+sdk_version: 5.31.0
+app_file: app.py
+pinned: false
+---
+
 # 📄 Chat with PDF – Gemini AI Agent
 
 A conversational AI agent that lets you upload any PDF and chat with its contents!  
@@ -116,5 +127,6 @@ See [LICENSE](LICENSE) for details.
 For questions or contributions, open an issue or pull request.
 
 ---
+
 
 
