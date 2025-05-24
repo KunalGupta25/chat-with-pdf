@@ -47,7 +47,7 @@ def process_pdf_ui(file):
     return pdf_text
 
 def chat_ui(query, history, pdf_text):
-    response = agent.chat(
+    response = agent.run(
         f"PDF Context: {pdf_text}\nUser Query: {query}\nChat History: {history}"
     )
     return response, history + [(query, response)]
@@ -59,7 +59,7 @@ with gr.Blocks() as demo:
         pdf_input = gr.File(label="Upload PDF", file_types=[".pdf"])
         pdf_text = gr.Textbox(visible=False)
 
-        chatbot = gr.Chatbot()
+        chatbot = gr.Chatbot(type="messages")
         msg = gr.Textbox(placeholder="Ask a question about the PDF")
 
         pdf_input.upload(process_pdf_ui, inputs=pdf_input, outputs=pdf_text)
